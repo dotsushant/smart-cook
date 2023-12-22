@@ -1,0 +1,88 @@
+*************************************************
+Install Mono (if not done)
+*************************************************
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install mono-complete
+sudo apt-get install gtk-sharp2
+sudo apt-get install monodevelop
+sudo apt-get install xterm
+*************************************************
+Install RaspberryPiDotNet:
+*************************************************
+mkdir gpio_csharp
+git clone git://github.com/cypherkey/RaspberryPi.Net.git
+cd RaspberryPi.Net/RaspberryPiDotNet
+xbuild RaspberryPiDotNet.csproj
+cp bin/Debug/RaspberryPiDotNet.dll /home/pi/gpio_csharp/
+
+*************************************************
+Install bcm2835 library:
+*************************************************
+wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.36.tar.gz
+tar -zxf bcm2835-1.36.tar.gz
+cd bcm2835-1.36
+./configure
+make
+sudo make check
+sudo make install
+cd src
+cc - shared bcm2835.o -o libbcm2835.so
+cp libbcm2835.so /home/pi/gpio_csharp/
+Delete unused files and folders: 
+With this command you can delete the created folders and files but do not delete the "gpio_csharp":
+
+rm -r <folder>
+rm <file>
+Create a C# script: ensure you run monodevelop using sudo monodevelop
+
+nano /home/pi/gpio_csharp/xxxxx.cs   //xxxxx is your filename
+CTRL + X     //For exit and save script
+
+*************************************************
+Add SPI commands in the script: 
+(Add this in the "class" space of the programm)
+*************************************************
+[DllImport("libbcm2835.so", EntryPoint = "bcm2835_spi_begin")]
+static extern void spi_begin();
+
+[DllImport("libbcm2835.so", EntryPoint = "bcm2835_spi_end")]
+static extern void spi_end();
+
+[DllImport("libbcm2835.so", EntryPoint = "bcm2835_spi_transfer")]
+static extern byte spi_transfer(byte val);
+
+[DllImport("libbcm2835.so", EntryPoint = "bcm2835_spi_chipSelect")]
+static extern byte spi_chipSelect(GPIOPins pin);
+
+[DllImport("libbcm2835.so", EntryPoint = "bcm2835_spi_setClockDivider")]
+static extern byte spi_setClockDivider(int val);
+
+[DllImport("libbcm2835.so", EntryPoint = "bcm2835_spi_setDataMode")]
+static extern byte spi_setDataMode(int val);
+
+[DllImport("libbcm2835.so", EntryPoint = "bcm2835_spi_setChipSelectPolarity")]
+static extern byte spi_setChipSelectPolarity(GPIOPins pin, bool activeHigh);
+
+
+*************************************************
+Use commands in your code:
+Now you can use the following commands to use SPI. Example is down the page.
+*************************************************
+ spi_begin();
+ spi_end();
+ spi_transfer();
+ spi_chipSelect();
+ spi_setClockDivider();
+ spi_setDataMode();
+ spi_setChipSelectPolarity();
+
+
+//SPI Try
+    spi_setClockDivider(128);
+    spi_setDataMode(0);
+    spi_chipSelect(cs);
+    spi_setChipSelectPolarity(cs, false);
+    spi_begin();
+    spi_transfer(0xAA);
+    spi_end();

@@ -1,0 +1,18 @@
+sudo apt-get update
+sudo apt-get install mono-complete
+sudo apt-get install gtk-sharp2
+sudo apt-get install monodevelop
+sudo apt-get install xterm
+
+using System;
+ 
+public class HelloWorld
+{
+    public static void Main()
+    {
+        Console.WriteLine("Hello World!");
+    }
+}
+
+gmcs HelloWorld.cs
+mono HelloWorld.exe
